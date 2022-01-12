@@ -1,0 +1,88 @@
+!
+! test HL-LHC IBS
+!
+option, warn,info;
+
+! --- my parameters
+
+NRJ=7000;
+V0=16;
+mylhcbeam=1;
+emittance_norm = 2.5e-6;
+nppb=2.2e11;
+bunch_len=0.076;
+enx=2.5e-6;
+eny=2.5e-6;
+gamma_rel=NRJ/pmass;
+epsx:=enx/gamma_rel;
+epsy:=eny/gamma_rel;
+!
+
+option -echo,-warn,-info;
+call,file='/afs/cern.ch/eng/lhc/optics/runIII/lhc.seq';
+call,file='/afs/cern.ch/eng/lhc/optics/HLLHCV1.5/hllhc_sequence.madx';
+call,file='/afs/cern.ch/eng/lhc/optics/HLLHCV1.5/toolkit/macro.madx';
+
+beam,particle=proton,sequence=lhcb1,energy=NRJ,
+	npart:=nppb,sige=4.5e-4*sqrt(450/NRJ),
+	ex:=epsx,ey:=epsy,sigt:=bunch_len, bv=1;
+
+beam,particle=proton,sequence=lhcb2,energy=NRJ,
+	npart:=nppb,sige=4.5e-4*sqrt(450/NRJ),
+	ex:=epsx,ey:=epsy,sigt:=bunch_len,bv=-1;
+
+usethin=1;
+if (usethin=1) {
+	print,text='>>>> Loading thin optics';
+	call,file='/afs/cern.ch/eng/lhc/optics/HLLHCV1.5/round/opt_round_150_1500_thin.madx';
+	! Slice nominal sequence
+	exec, myslice;
+} else {
+	print,text='>>>> Loading thick optics';
+	call,file='/afs/cern.ch/eng/lhc/optics/HLLHCV1.5/round/opt_round_150_1500.madx';
+}
+
+print,text='%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%';
+print,text='% beam loading completed      %';
+print,text='%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%';
+
+check_ips_at_load=1;
+if (check_ips_at_load == 1) {
+	print,text='checking IPs';
+	exec,check_ip(b1); exec,check_ip(b2);
+}
+
+select, flag=twiss, column=name,s,betx,bety,alfx,alfy,dx,dpx,dy,dpy,mux,muy,x,px,y,py;
+twiss, sequence=lhcb1,chrom,centre;
+
+ring_len = table(summ, length);  ! [m]
+ring_period = ring_len/clight;	 ! [sec]
+harmonic_number = hrf400;
+gamma_tr = table(summ,gammatr);
+beta_rel = beam->beta;
+eta_p = 1/gamma_rel^2 - 1/gamma_tr^2;
+
+! -- enable RF
+vrf400=V0;
+lagrf400.b1=0.5;
+
+use,sequence=lhcb1;
+beam,sequence=lhcb1, radiate;
+show,beam%lhcb1;
+emit,deltap=0;
+show,beam%lhcb1;
+ex0 = beam%lhcb1->ex;
+
+twiss,chrom;
+
+print,text=">>>> twiss completed Radiation Integrals: ";
+I1=table(summ,synch_1);
+I2=table(summ,synch_2);
+I3=table(summ,synch_3);
+I4=table(summ,synch_4);
+!I4=2e-4;
+I5=table(summ,synch_5);
+
+value,I1,I2,I3,I4,I5;
+
+return;

@@ -1,0 +1,21 @@
+!
+! test HL-LHC IBS
+!
+option, warn,info;
+
+! --- my parameters
+
+NRJ=7000;
+V0=16;
+mylhcbeam=1;
+emittance_norm = 2.5e-6;
+nppb=2.2e11;
+bunch_len=0.076;
+enx=2.5e-6;
+eny=2.5e-6;
+gamma_rel=NRJ/pmass;
+epsx:=enx/gamma_rel;
+epsy:=eny/gamma_rel;
+!
+!
+return;

@@ -1,0 +1,17 @@
+!
+! test HL-LHC IBS
+!
+option, warn,info;
+
+value, vrf400, lagrf400.b1;
+
+use,sequence=lhcb1;
+beam,sequence=lhcb1, radiate;
+show,beam%lhcb1;
+emit,deltap=0;
+show,beam%lhcb1;
+ex0 = beam%lhcb1->ex;
+
+twiss,chrom;
+
+return;

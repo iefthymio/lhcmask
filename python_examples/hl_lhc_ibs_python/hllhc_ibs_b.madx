@@ -1,0 +1,33 @@
+!
+! test HL-LHC IBS
+!
+option, warn,info;
+
+! --- my parameters
+
+check_ips_at_load=0;
+if (check_ips_at_load == 1) {
+	print,text='checking IPs';
+	exec,check_ip(b1); exec,check_ip(b2);
+}
+use,sequence=lhcb1;
+select, flag=twiss, column=name,s,betx,bety,alfx,alfy,dx,dpx,dy,dpy,mux,muy,x,px,y,py;
+twiss, sequence=lhcb1,chrom,centre;
+
+! ring_len = table(summ, length);
+! ring_period = ring_len/clight; ! [sec] LHC ring period 
+
+! -- enable RF
+!vrf400=V0;
+! lagrf400.b1=0.5;
+
+use,sequence=lhcb1;
+beam,sequence=lhcb1, radiate;
+show,beam%lhcb1;
+emit,deltap=0;
+show,beam%lhcb1;
+ex0 = beam%lhcb1->ex;
+
+twiss,chrom;
+
+return;
