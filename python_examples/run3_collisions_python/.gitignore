@@ -1,0 +1,5 @@
+#
+# - local gitignore for this project
+
+run/
+__pycache__/
